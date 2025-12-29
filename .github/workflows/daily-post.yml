@@ -25,9 +25,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: Create cookies file
+        env:
+          COOKIES_JSON: ${{ secrets.COOKIES_JSON }}
         run: |
           mkdir -p credentials
-          echo '${{ secrets.COOKIES_JSON }}' > credentials/cookies.json
+          echo "$COOKIES_JSON" > credentials/cookies.json
 
       - name: Run bot
         env:

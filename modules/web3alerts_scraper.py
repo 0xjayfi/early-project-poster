@@ -24,6 +24,14 @@ class Web3AlertsScraper:
         """
         self.base_url = "https://web3alerts.app"
         self.session = requests.Session()
+        # Set headers to mimic browser request
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Referer': 'https://web3alerts.app/',
+            'Origin': 'https://web3alerts.app'
+        })
         self.load_cookies(cookies_path)
 
     def load_cookies(self, cookies_path: str):
