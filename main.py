@@ -19,6 +19,7 @@ import config
 from modules.web3alerts_scraper import Web3AlertsScraper
 from modules.typefully_publisher import TypefullyPublisher
 from modules.gemini_summarizer import GeminiSummarizer
+from modules.email_notifier import EmailNotifier
 
 # Configure logging
 logging.basicConfig(
@@ -82,10 +83,32 @@ def run_bot(publish_now: bool = False):
         logger.error("Configuration validation failed")
         sys.exit(1)
 
-    try:
-        # Initialize scraper
-        scraper = Web3AlertsScraper(config.COOKIES_PATH)
+    # Initialize scraper and validate credentials first
+    scraper = Web3AlertsScraper(config.COOKIES_PATH)
 
+    logger.info("Validating Web3 Alerts credentials...")
+    is_valid, error_msg = scraper.validate_credentials()
+
+    if not is_valid:
+        logger.error(f"Credential validation failed: {error_msg}")
+        print(f"\n❌ Credentials expired: {error_msg}")
+
+        # Send email notification if configured
+        if config.GMAIL_ADDRESS and config.GMAIL_APP_PASSWORD:
+            notifier = EmailNotifier(config.GMAIL_ADDRESS, config.GMAIL_APP_PASSWORD)
+            if notifier.send_credential_expiry_notification(error_msg):
+                print("📧 Email notification sent")
+            else:
+                print("⚠️ Failed to send email notification")
+        else:
+            logger.warning("Email notification not configured (GMAIL_ADDRESS/GMAIL_APP_PASSWORD missing)")
+            print("⚠️ Email notification not configured")
+
+        sys.exit(1)
+
+    logger.info("Credentials validated successfully")
+
+    try:
         # Fetch latest projects
         logger.info(f"Fetching {config.PROJECTS_COUNT} latest projects...")
         projects = scraper.get_latest_projects(count=config.PROJECTS_COUNT)

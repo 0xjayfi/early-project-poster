@@ -34,6 +34,10 @@ GEMINI_MODEL: str = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash-lite')
 # Logging Configuration
 LOG_LEVEL: str = os.getenv('LOG_LEVEL', 'INFO')
 
+# Email Notification Configuration (Gmail SMTP)
+GMAIL_ADDRESS: Optional[str] = os.getenv('GMAIL_ADDRESS')
+GMAIL_APP_PASSWORD: Optional[str] = os.getenv('GMAIL_APP_PASSWORD')
+
 # Upload schedule time in Singapore time (for cron-like scheduling)
 # Default: 11:00 (11 AM SGT, 6 hours before 5 PM publish time)
 UPLOAD_TIME_SGT: str = os.getenv('UPLOAD_TIME_SGT', '11:00')

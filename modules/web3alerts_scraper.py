@@ -42,6 +42,39 @@ class Web3AlertsScraper:
                 self.session.cookies.set(cookie['name'], cookie['value'])
         logger.info(f"Loaded cookies from {cookies_path}")
 
+    def validate_credentials(self) -> tuple[bool, str]:
+        """
+        Check if credentials are valid by making a test API request.
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        try:
+            url = f"{self.base_url}/api/new_projects"
+            response = self.session.get(url, timeout=30)
+
+            if response.status_code == 401:
+                return False, "Authentication failed: Session expired or invalid"
+            if response.status_code == 403:
+                return False, "Access forbidden: Credentials may have expired"
+            if response.status_code >= 400:
+                return False, f"API error: HTTP {response.status_code}"
+
+            # Check if response is valid JSON with project data
+            data = response.json()
+            if isinstance(data, list):
+                logger.info("Credentials validated successfully")
+                return True, ""
+            else:
+                return False, "Unexpected API response format"
+
+        except requests.exceptions.Timeout:
+            return False, "Request timed out while validating credentials"
+        except requests.exceptions.RequestException as e:
+            return False, f"Network error: {str(e)}"
+        except json.JSONDecodeError:
+            return False, "Invalid response from API (not JSON)"
+
     def get_new_projects(self, ts: str = None) -> List[Dict]:
         """
         Fetch new projects from the API
